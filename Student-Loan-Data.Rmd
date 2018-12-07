@@ -300,7 +300,9 @@ Plotting the residuals for the training data:
 college_09_15_train %>%
   add_residuals(model) %>% 
   ggplot(aes(sample=resid)) + 
-  geom_qq(color = "blue", alpha = 0.2)
+  geom_qq(color = "blue", alpha = 0.2) +
+  labs(title = "Residual Plot for training data")
+  
 ```
 
 
@@ -310,7 +312,8 @@ Plotting the residuals for the test data:
 college_09_15_test %>%
   add_residuals(model) %>% 
   ggplot(aes(sample=resid)) + 
-  geom_qq(color = "purple", alpha = 0.2)
+  geom_qq(color = "purple", alpha = 0.2)+
+  labs(title = "Residual Plot for test data")
 ```
 
 
