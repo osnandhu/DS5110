@@ -255,6 +255,141 @@ college_09_15_train %>%
   facet_wrap(~Year)
 ```
 Keeping MD_FAMINC.
+# 5. We can cross verify our results by calculating the Pearson's Correlation Coefficient  by taking '2013-14' as the Reference Year.
+```{r, message=FALSE, warning=FALSE}
+college_09_15_2<-college_09_15_train %>%
+  filter(Year == "2013-14")
+
+#PCTPELL vs 3 YR Repayment Rate
+
+r1<-cor.test(college_09_15_2$PCTPELL,
+             college_09_15_2$COMPL_RPY_3YR_RT,
+             method = "pearson",
+             conf.level = 0.95)
+r1
+
+college_09_15_2 %>%
+  ggplot() +
+  geom_point(aes(
+    x = PCTPELL, y = COMPL_RPY_3YR_RT),
+    color= "darkgreen", alpha = 0.2)+
+  labs(
+    title="% Undergraduate students who received Pell Grants vs. 3-Year Repayment Rate \n for Completers",
+    x="Percentage of undergraduate students who received Pell Grants",
+    y="3-year repayment rate for completers"
+  )+ 
+  annotate("text",
+           x=0.75, y=0.9, 
+           label="Correlation Coefficient = -0.70047")
+
+
+#DEBT-EARNINGS vs 3 yr repayment rate:
+r2<-cor.test(college_09_15_2$DEBT_TO_EARN,
+             college_09_15_2$COMPL_RPY_3YR_RT,
+             method = "pearson", 
+             conf.level = 0.95)
+r2 
+
+college_09_15_2 %>%
+  ggplot() +
+  geom_point(aes(
+    x = DEBT_TO_EARN, y = COMPL_RPY_3YR_RT),
+    color= "magenta", alpha = 0.2)+
+  labs(
+    title="Debt to Earnings Ratio vs. 3-Year Repayment Rate for Completers",
+    x="Debt to Earnings ratio",
+    y="3-year repayment rate for completers"
+  ) + annotate("text",
+               x=1.8, y=0.65, 
+               label="Correlation Coefficient = -0.1860051")
+
+
+#COST4A vs 3 Yr repayment rates:
+r3<-cor.test(college_09_15_2$COSTT4_A,
+             college_09_15_2$COMPL_RPY_3YR_RT,
+             method = "pearson",
+             conf.level = 0.95)
+r3
+
+college_09_15_2 %>%
+  ggplot() +
+  geom_point(aes(
+    x = COSTT4_A, y = COMPL_RPY_3YR_RT),
+    color= "#660099", alpha = 0.2 )+
+  xlim(c(0, 120000))+
+  labs(
+    title="Cost of Attending the Institute vs. 3-Year Repayment Rate for Completers",
+    x="Cost of attending the institute",
+    y="3-year repayment rate for completers"
+  )+ annotate("text",
+              x=95000, y=0.65, 
+              label="Correlation Coefficient = 0.3033664")
+
+# Median Earnings vs 3 YR Repayment Rate:
+r4<-corr_coeff<-cor.test(college_09_15_2$MD_EARN_WNE_P8,
+                         college_09_15_2$COMPL_RPY_3YR_RT,
+                         method = "pearson", 
+                         conf.level = 0.95)
+r4
+
+college_09_15_2 %>%
+  ggplot() +
+  geom_point(aes(
+    x = MD_EARN_WNE_P8, y = COMPL_RPY_3YR_RT),
+    color="red", alpha = 0.2)+
+  xlim(c(0, 120000))+
+  labs(
+  title="Median earnings of Federally Aided students after graduation vs.\n 3-Year Repayment Rate for Completers",
+    x="Median earnings of federally aided students after graduation",
+    y="3-year repayment rate for completers"
+  )+annotate("text",
+             x=95000, y=0.65, 
+             label="Correlation Coefficient = 0.6578909")
+
+#Median Family Income vs 3 YR Repayment Rate:
+r5<-cor.test(college_09_15_2$MD_FAMINC,
+             college_09_15_2$COMPL_RPY_3YR_RT,
+             method = "pearson", 
+             conf.level = 0.95) 
+r5
+
+college_09_15_2 %>%
+  ggplot() +
+  geom_point(aes(
+    x =MD_FAMINC, y = COMPL_RPY_3YR_RT),
+    color="blue", alpha = 0.2) + 
+  xlim(c(0, 120000))+
+  labs(
+    title="Median Family Income vs.3-Year Repayment Rate for Completers",
+    x="Median Family Income",
+    y="3-year repayment rate for completers"
+  )+ annotate("text",
+              x=95000, y=0.65, 
+              label="Correlation Coefficient = 0.7743165")
+
+
+# PCTFLOAN vs 3 YR Repayment Rate:
+
+r6<-cor.test(college_09_15_2$PCTFLOAN,
+             college_09_15_2$COMPL_RPY_3YR_RT,
+             method = "pearson", 
+             conf.level = 0.95)
+r6
+
+college_09_15_2 %>%
+  ggplot() +
+  geom_point(aes(
+    x = PCTFLOAN, y = COMPL_RPY_3YR_RT),
+    color="#E69F00" , alpha = 0.2 )+
+  labs(
+    title="Percent of all undergraduate students receiving a federal student loan vs.\n 3-Year Repayment Rate for Completers",
+    x="Percent of all undergraduate students receiving a federal student loan",
+    y="3-year repayment rate for completers"
+  )+ annotate("text",
+              x=0.19, y=0.95, 
+              label="Correlation Coefficient = -0.2236313 ")
+
+```
 
 ## 5. Now we can try fitting a linear model with the above predictor variables.
 
