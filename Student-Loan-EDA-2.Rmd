@@ -1,0 +1,112 @@
+---
+title: "EDA Report code"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(tidyverse)
+library(dbplyr)
+```
+
+```{r college}
+col_08_09 <- read.csv("../mfrubenstein/Downloads/CollegeScorecard_Raw_Data/MERGED2008_09_PP.csv")
+college_08_09 <- col_08_09 %>%
+  mutate("Year" = "2008-09")
+
+col_09_10 <- read.csv("../mfrubenstein/Downloads/CollegeScorecard_Raw_Data/MERGED2009_10_PP.csv")
+college_09_10 <- col_09_10 %>%
+  mutate("Year" = "2009-10")
+
+col_10_11 <- read.csv("../mfrubenstein/Downloads/CollegeScorecard_Raw_Data/MERGED2010_11_PP.csv")
+college_10_11 <- col_10_11 %>%
+  mutate("Year" = "2010-11")
+
+col_11_12 <- read.csv("../mfrubenstein/Downloads/CollegeScorecard_Raw_Data/MERGED2011_12_PP.csv")
+college_11_12 <- col_11_12 %>%
+  mutate("Year" = "2011-12")
+
+col_12_13 <- read.csv("../mfrubenstein/Downloads/CollegeScorecard_Raw_Data/MERGED2012_13_PP.csv")
+college_12_13 <- col_12_13 %>%
+  mutate("Year" = "2012-13")
+
+col_13_14 <- read.csv("../mfrubenstein/Downloads/CollegeScorecard_Raw_Data/MERGED2013_14_PP.csv")
+college_13_14 <- col_13_14 %>%
+  mutate("Year" = "2013-14")
+
+col_14_15 <- read.csv("../mfrubenstein/Downloads/CollegeScorecard_Raw_Data/MERGED2014_15_PP.csv")
+college_14_15 <- col_14_15 %>%
+  mutate("Year" = "2014-15")
+
+college_08_13 <- rbind(college_08_09, college_09_10, college_10_11, college_11_12, college_12_13, college_13_14, college_14_15)
+
+collegeuse <- select(college_08_13, Year, INSTNM, CITY, STABBR, REGION, ICLEVEL, LATITUDE, LONGITUDE, CONTROL, PCIP11, PCIP13, PCIP14, PCIP24, PCIP26, PCIP38, PCIP45, PCIP50, UG, UGDS_WHITE, UGDS_BLACK, UGDS_HISP, UGDS_ASIAN, UGDS_AIAN, UGDS_NHPI, UGDS_2MOR, UGDS_NRA, UGDS_UNKN, UGDS_WHITENH, UGDS_BLACKNH, UGDS_API, NPT4_PUB, NPT4_PRIV, NUM4_PUB, NUM4_PRIV, NUM41_PUB, NUM42_PUB, NUM43_PUB, NUM44_PUB, NUM45_PUB, NUM41_PRIV, NUM42_PRIV, NUM43_PRIV, NUM44_PRIV, NUM45_PRIV, TUITIONFEE_IN, TUITIONFEE_OUT, PCTPELL, C150_4, PFTFTUG1_EF, PCTFLOAN, PELL_COMP_ORIG_YR4_RT, PELL_WDRAW_ORIG_YR4_RT, LOAN_COMP_ORIG_YR4_RT, LOAN_WDRAW_ORIG_YR4_RT, COMPL_RPY_3YR_RT, NONCOM_RPY_3YR_RT, LO_INC_RPY_3YR_RT, MD_INC_RPY_3YR_RT, HI_INC_RPY_3YR_RT, PELL_RPY_3YR_RT, PAR_ED_PCT_MS, PAR_ED_PCT_HS, PAR_ED_PCT_PS, DEBT_MDN, GRAD_DEBT_MDN, WDRAW_DEBT_MDN, LO_INC_DEBT_MDN, MD_INC_DEBT_MDN, HI_INC_DEBT_MDN, PELL_DEBT_MDN, DEBT_N, GRAD_DEBT_N, WDRAW_DEBT_N, LO_INC_DEBT_N, MD_INC_DEBT_N, HI_INC_DEBT_N, PELL_DEBT_N, MD_FAMINC, UGDS_MEN, UGDS_WOMEN, RPY_3YR_N, MD_EARN_WNE_P6)
+
+collegeuse <- filter(collegeuse, CONTROL %in% c("1", "2"), ICLEVEL == "1")
+collegeuse <- mutate(collegeuse, CONTROL = recode(CONTROL, "1" = "Public","2" = "Private"))
+```
+
+```{r repay}
+#3 Year Repayment Completers vs. Non-Completers
+repay <- select(collegeuse, INSTNM, CONTROL, Year, STABBR, COMPL_RPY_3YR_RT, NONCOM_RPY_3YR_RT, LO_INC_RPY_3YR_RT, MD_INC_RPY_3YR_RT, HI_INC_RPY_3YR_RT, PELL_RPY_3YR_RT)
+repay <- within(repay, { 
+        COMPL_RPY_3YR_RT <- as.numeric(as.character(COMPL_RPY_3YR_RT))
+        NONCOM_RPY_3YR_RT <- as.numeric(as.character(NONCOM_RPY_3YR_RT))
+        LO_INC_RPY_3YR_RT <- as.numeric(as.character(LO_INC_RPY_3YR_RT))
+        MD_INC_RPY_3YR_RT <- as.numeric(as.character(MD_INC_RPY_3YR_RT))
+        HI_INC_RPY_3YR_RT <- as.numeric(as.character(HI_INC_RPY_3YR_RT)) 
+        PELL_RPY_3YR_RT <- as.numeric(as.character(PELL_RPY_3YR_RT)) 
+        })
+repay <- summarise(group_by(repay, Year, STABBR, CONTROL, INSTNM), 
+                   COMPL_RPY_3YR_RT = mean(COMPL_RPY_3YR_RT, na.rm = TRUE), 
+                   NONCOM_RPY_3YR_RT = mean(NONCOM_RPY_3YR_RT, na.rm = TRUE), 
+                   LO_INC_RPY_3YR_RT = mean(LO_INC_RPY_3YR_RT, na.rm = TRUE), 
+                   MD_INC_RPY_3YR_RT = mean(MD_INC_RPY_3YR_RT, na.rm = TRUE), 
+                   HI_INC_RPY_3YR_RT = mean(HI_INC_RPY_3YR_RT, na.rm = TRUE), 
+                   PELL_RPY_3YR_RT = mean(PELL_RPY_3YR_RT, na.rm = TRUE))
+
+repay <- filter(repay, STABBR == "MA")
+repay<- mutate(repay, INSTNM = recode(INSTNM, "Massachusetts Institute of Technology" = "MIT", "University of Massachusetts-Amherst" = "UMass-Amherst", "University of Massachusetts-Lowell" = "UMass-Lowell","University of Massachusetts-Boston" = "UMass-Boston", "Massachusetts College of Liberal Arts" = "MCLA","University of Massachusetts-Dartmouth" = "UMass-Dartmouth"))
+
+repay <- filter(repay, INSTNM %in% c("MIT","Harvard University", "Brandeis University", "Boston College", "Tufts University", "UMass-Amherst", "UMass-Lowell", "UMass-Boston", "MCLA", "UMass-Dartmouth"))
+repay <- filter(repay, Year != "2008-09")
+
+repayoverall <- select(repay, STABBR, CONTROL, INSTNM, Year, COMPL_RPY_3YR_RT, NONCOM_RPY_3YR_RT)
+repayoverall <- gather(repayoverall, "COMPL_RPY_3YR_RT", "NONCOM_RPY_3YR_RT", key = "type", value = "number")
+repay <- gather(repay, "LO_INC_RPY_3YR_RT", "MD_INC_RPY_3YR_RT", "HI_INC_RPY_3YR_RT", key = "type", value = "number")
+
+repay <- mutate(repay, type = recode(type, "LO_INC_RPY_3YR_RT" = "Low Income", "MD_INC_RPY_3YR_RT" = "Medium Income", "HI_INC_RPY_3YR_RT" = "High Income"))
+
+repay$type <- factor(repay$type, levels = c("Low Income", "Medium Income", "High Income"))
+ggplot(data= repay) + geom_col(data = repay, mapping = aes(x= INSTNM, y = number, fill = type), position = "dodge") + facet_wrap(~Year) +theme(axis.text.x = element_text(angle = 70, hjust = 1)) +coord_flip() + labs (title = "3 Year Repayment Rate by Family Income", x = "Rate", y =  "MA University") 
+
+ggplot(data= repayoverall) + geom_col(data = repayoverall, mapping = aes(x= INSTNM, y = number, fill = type), position= "dodge") +facet_wrap(~Year) +theme(axis.text.x = element_text(angle = 70, hjust = 1)) +coord_flip() + labs (title = "3 Year Repayment Completers vs. Non-Completers", x = "MA University", y =  "Rate") + scale_fill_discrete(name = "Type", labels = c("Completers", "Non-Completers")) 
+```
+
+
+```{r repay all}
+repaystate <- select(collegeuse, INSTNM, CONTROL, Year, STABBR, COMPL_RPY_3YR_RT, NONCOM_RPY_3YR_RT, LO_INC_RPY_3YR_RT, MD_INC_RPY_3YR_RT, HI_INC_RPY_3YR_RT, PELL_RPY_3YR_RT)
+repaystate <- within(repaystate, { 
+        COMPL_RPY_3YR_RT <- as.numeric(as.character(COMPL_RPY_3YR_RT))
+        NONCOM_RPY_3YR_RT <- as.numeric(as.character(NONCOM_RPY_3YR_RT))
+        LO_INC_RPY_3YR_RT <- as.numeric(as.character(LO_INC_RPY_3YR_RT))
+        MD_INC_RPY_3YR_RT <- as.numeric(as.character(MD_INC_RPY_3YR_RT))
+        HI_INC_RPY_3YR_RT <- as.numeric(as.character(HI_INC_RPY_3YR_RT)) 
+        PELL_RPY_3YR_RT <- as.numeric(as.character(PELL_RPY_3YR_RT)) 
+        })
+repaystate <- summarise(group_by(repaystate, Year, STABBR, CONTROL, INSTNM), 
+                   COMPL_RPY_3YR_RT = mean(COMPL_RPY_3YR_RT, na.rm = TRUE), 
+                   NONCOM_RPY_3YR_RT = mean(NONCOM_RPY_3YR_RT, na.rm = TRUE), 
+                   LO_INC_RPY_3YR_RT = mean(LO_INC_RPY_3YR_RT, na.rm = TRUE), 
+                   MD_INC_RPY_3YR_RT = mean(MD_INC_RPY_3YR_RT, na.rm = TRUE), 
+                   HI_INC_RPY_3YR_RT = mean(HI_INC_RPY_3YR_RT, na.rm = TRUE), 
+                   PELL_RPY_3YR_RT = mean(PELL_RPY_3YR_RT, na.rm = TRUE))
+
+repaystate <- filter(repaystate, Year == "2014-15")
+repaystate <- gather(repaystate, "COMPL_RPY_3YR_RT", "NONCOM_RPY_3YR_RT", key = "type", value = "number")
+
+ggplot(data= repaystate) + geom_col(data = repaystate, mapping = aes(x= STABBR, y = number, fill = type), position= "dodge") +theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs (title = "3 Year Repayment Completers vs. Non-Completers Across States, 2014-15", x = "State", y =  "Rate") + scale_fill_discrete(name = "Type", labels = c("Completers", "Non-Completers")) 
+
+```

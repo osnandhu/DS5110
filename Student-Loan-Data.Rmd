@@ -77,7 +77,7 @@ Intuitively, we select a subset of variables, and tidy the data for further EDA.
 
 ```{r, message=FALSE, warning=FALSE}
 college_09_15_train <- college_09_15_train_ %>%
-  select(COMPL_RPY_3YR_RT, GRAD_DEBT_MDN,PCTFLOAN, PCTPELL, MD_EARN_WNE_P6, MD_EARN_WNE_P8, MD_EARN_WNE_P10,
+  select(INSTNM, COMPL_RPY_3YR_RT, GRAD_DEBT_MDN,PCTFLOAN, PCTPELL, MD_EARN_WNE_P6, MD_EARN_WNE_P8, MD_EARN_WNE_P10,
          CDR3, MEDIAN_HH_INC, AGE_ENTRY, UGDS, CONTROL, COSTT4_A, COSTT4_P, Year, DEBT_TO_EARN, MD_FAMINC) %>%
   mutate(COMPL_RPY_3YR_RT = as.numeric(as.character(COMPL_RPY_3YR_RT)),
          GRAD_DEBT_MDN = as.numeric(as.character(GRAD_DEBT_MDN)),
@@ -96,7 +96,7 @@ college_09_15_train <- college_09_15_train_ %>%
          MD_FAMINC = as.numeric(as.character(MD_FAMINC))) 
 
 college_09_15_test <- college_09_15_test_ %>%
-  select(COMPL_RPY_3YR_RT, GRAD_DEBT_MDN,PCTFLOAN, PCTPELL, MD_EARN_WNE_P6, MD_EARN_WNE_P8, MD_EARN_WNE_P10,
+  select(INSTNM, COMPL_RPY_3YR_RT, GRAD_DEBT_MDN,PCTFLOAN, PCTPELL, MD_EARN_WNE_P6, MD_EARN_WNE_P8, MD_EARN_WNE_P10,
          CDR3, MEDIAN_HH_INC, AGE_ENTRY, UGDS, CONTROL, COSTT4_A, COSTT4_P, Year, DEBT_TO_EARN, MD_FAMINC) %>%
   mutate(COMPL_RPY_3YR_RT = as.numeric(as.character(COMPL_RPY_3YR_RT)),
          GRAD_DEBT_MDN = as.numeric(as.character(GRAD_DEBT_MDN)),
@@ -115,7 +115,7 @@ college_09_15_test <- college_09_15_test_ %>%
          MD_FAMINC = as.numeric(as.character(MD_FAMINC))) 
 
 college_09_15_valid <- college_09_15_valid_ %>%
-  select(COMPL_RPY_3YR_RT, GRAD_DEBT_MDN,PCTFLOAN, PCTPELL, MD_EARN_WNE_P6, MD_EARN_WNE_P8, MD_EARN_WNE_P10,
+  select(INSTNM, COMPL_RPY_3YR_RT, GRAD_DEBT_MDN,PCTFLOAN, PCTPELL, MD_EARN_WNE_P6, MD_EARN_WNE_P8, MD_EARN_WNE_P10,
          CDR3, MEDIAN_HH_INC, AGE_ENTRY, UGDS, CONTROL, COSTT4_A, COSTT4_P, Year, DEBT_TO_EARN, MD_FAMINC) %>%
   mutate(COMPL_RPY_3YR_RT = as.numeric(as.character(COMPL_RPY_3YR_RT)),
          GRAD_DEBT_MDN = as.numeric(as.character(GRAD_DEBT_MDN)),
@@ -294,7 +294,28 @@ print("Mean Absolute Error for Test Data" )
 mae(model, college_09_15_test)
 
 ```
+Plotting the actual vs predicted data for test set: 
+
+```{r, message=FALSE, warning=FALSE}
+college_09_15_test %>%
+  add_predictions(model) %>% 
+  ggplot(aes(x=COMPL_RPY_3YR_RT, y = pred)) + 
+  geom_point(color = "blue", alpha = 0.2)+
+  geom_abline(color = "red") +
+  labs(title = "Actual vs. Predicted Values for 3-yr repayment rate",
+       x = "Actual values for 3-yr repayment rate",
+       y = "Predicted Values")
+```
+
 Plotting the residuals for the training data: 
+
+```{r, message=FALSE, warning=FALSE}
+college_09_15_test %>%
+  add_residuals(model) %>% 
+  ggplot(aes(x=DEBT_TO_EARN, y = resid)) + 
+  geom_point(color = "purple", alpha = 0.2)+
+  labs(title = "Residual Plot for test data")
+```
 
 ```{r, message=FALSE, warning=FALSE}
 college_09_15_train %>%
@@ -317,56 +338,84 @@ college_09_15_test %>%
 ```
 
 
+```{r, message=FALSE, warning=FALSE}
+college_09_15_test %>%
+  add_residuals(model) %>% 
+  ggplot(aes(x=DEBT_TO_EARN, y = resid)) + 
+  geom_point(color = "purple", alpha = 0.2)+
+  labs(title = "Residual Plot for test data")
+```
+
+```{r, message=FALSE, warning=FALSE}
+college_09_15_test %>%
+  add_residuals(model) %>% 
+  ggplot(aes(x=PCTPELL, y = resid)) + 
+  geom_point(color = "purple", alpha = 0.2)+
+  labs(title = "Residual Plot for test data")
+```
+
+```{r, message=FALSE, warning=FALSE}
+college_09_15_test %>%
+  add_residuals(model) %>% 
+  ggplot(aes(x=MD_EARN_WNE_P8, y = resid)) + 
+  geom_point(color = "purple", alpha = 0.2)+
+  labs(title = "Residual Plot for test data")
+```
+
+```{r, message=FALSE, warning=FALSE}
+college_09_15_test %>%
+  add_residuals(model) %>% 
+  ggplot(aes(x=COSTT4_A, y = resid)) + 
+  geom_point(color = "purple", alpha = 0.2)+
+  labs(title = "Residual Plot for test data")
+```
+
+```{r, message=FALSE, warning=FALSE}
+college_09_15_test %>%
+  add_residuals(model) %>% 
+  ggplot(aes(x=log_MD_FAMINC, y = resid)) + 
+  geom_point(color = "purple", alpha = 0.2)+
+  labs(title = "Residual Plot for test data")
+```
+
+Set of 10 observations for the response variable (3-yr repayment rate for completers), vs the predicted values returned by the model.
+
+```{r, message=FALSE, warning=FALSE}
+college_09_15_test %>%
+  add_predictions(model) %>%
+  filter(!is.na(pred),!is.na(COMPL_RPY_3YR_RT) ) %>%
+  select(INSTNM, COMPL_RPY_3YR_RT, pred) %>%
+  transmute("Institute Name" = INSTNM,
+            "3-yr Repayment Rate - Actual values" = COMPL_RPY_3YR_RT,
+            "Predicted Values" = pred) %>%       
+  head(10)
+
+```
 
 ## 6.R-Square analysis for overfitting tests.
 
 ```{r, message=FALSE, warning=FALSE}
-#' @description Returns lm model fit statistics R-squared, adjucted R-squared,
-#'      predicted R-squared and PRESS.
-#'      Thanks to John Mount for his 6-June-2014 blog post, R style tip: prefer functions that return data frames" for
-#'      the idea \link{http://www.win-vector.com/blog/2014/06/r-style-tip-prefer-functions-that-return-data-frames}
-#' @return Returns a data frame with one row and a column for each statistic
-#' @param linear.model A \code{lm()} model.
-model_fit_stats <- function(linear.model) {
-  r.sqr <- summary(linear.model)$r.squared
-  adj.r.sqr <- summary(linear.model)$adj.r.squared
-  pre.r.sqr <- pred_r_squared(linear.model)
-  PRESS <- PRESS(linear.model)
-  return.df <- data.frame(r.squared = r.sqr, adj.r.squared = adj.r.sqr, pred.r.squared = pre.r.sqr, press = PRESS)
+ r_square_values <- function(linear.model) { 
+  r_squared <- summary(linear.model)$r.squared
+  adjusted_r_squared <- summary(linear.model)$adj.r.squared
+  predicted_r_squared <- predicted_r_squared_val(linear.model)
+  return.df <- data.frame(r.squared = r_squared, adjusted.r.squared = adjusted_r_squared, predicted.r.squared = predicted_r_squared)
   return(return.df)
 }
-```
 
-```{r, message=FALSE, warning=FALSE}
-#' @description returns the predictive r-squared. Requires the function PRESS(), which returns
-#'              the PRESS statistic.
-#' @param linear.model A linear regression model (class 'lm'). Required.
-#'
-pred_r_squared <- function(linear.model) {
-  #' Use anova() to get the sum of squares for the linear model
+predicted_r_squared_val <- function(linear.model) {
   lm.anova <- anova(linear.model)
-  #' Calculate the total sum of squares
-  tss <- sum(lm.anova$'Sum Sq')
-  # Calculate the predictive R^2
-  pred.r.squared <- 1-PRESS(linear.model)/(tss)
+  tot_sum_sq <- sum(lm.anova$'Sum Sq')
+  pred.r.squared <- 1-PRESS(linear.model)/(tot_sum_sq)
   
   return(pred.r.squared)
 }
-```
 
-
-```{r, message=FALSE, warning=FALSE}
-#' @description Returns the PRESS statistic (predictive residual sum of squares).
-#'              Useful for evaluating predictive power of regression models.
-#' @param linear.model A linear regression model (class 'lm'). Required.
-#' 
-PRESS <- function(linear.model) {
-  #' calculate the predictive residuals
-  pr <- residuals(linear.model)/(1-lm.influence(linear.model)$hat)
-  #' calculate the PRESS
-  PRESS <- sum(pr^2)
+pred_residual_sq_sum <- function(linear.model) {
+  pred <- residuals(linear.model)/(1-lm.influence(linear.model)$hat)
+  pred_resid_sum <- sum(pred^2)
   
-  return(PRESS)
+  return(pred_resid_sum)
 }
 ```
 
@@ -400,7 +449,7 @@ model_7 <- lm(COMPL_RPY_3YR_RT ~ DEBT_TO_EARN, + MD_EARN_WNE_P8 +PCTPELL + CDR3 
 rmse(model_7, college_09_15_valid) #0.2104708
 
 
-ldply(list(model_1, model_2, model_3, model_4, model_5, model_6, model_7), model_fit_stats)
+ldply(list(model_1, model_2, model_3, model_4, model_5, model_6, model_7), r_square_values)
 
 
 rmse(model_4, college_09_15_test)
